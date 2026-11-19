@@ -1,0 +1,139 @@
+[
+    {
+        "ticker": "AAPL",
+        "title": "Apple Q4 2025 Earnings",
+        "source": "SEC Filing / 10-Q",
+        "content": "Apple reported Q4 2025 revenue of $94.8B, up 6% YoY. Services revenue reached $25B, a new record. iPhone sales were flat but Mac and iPad showed strong growth."
+    },
+    {
+        "ticker": "AAPL",
+        "title": "Analyst Report - Apple Valuation",
+        "source": "Morgan Stanley Research",
+        "content": "Maintain Overweight rating on AAPL. Target price $260. Key catalysts include AI integration and services margin expansion. Current P/E of 28x is justified by recurring revenue growth."
+    },
+    {
+        "ticker": "TSLA",
+        "title": "Tesla Delivery Numbers Q3 2025",
+        "source": "Company Press Release",
+        "content": "Tesla delivered 462,000 vehicles in Q3 2025, slightly below consensus of 470,000. Production exceeded deliveries by 18,000 units, indicating potential demand softness."
+    },
+    {
+        "ticker": "",
+        "feature": "_shap",
+        "title": "How to read SHAP values (shap explanation)",
+        "source": "Indicator reference (project)",
+        "content": "SHAP values attribute a model prediction to its input features. For the XGBoost up/down classifier in this project, SHAP values are in log-odds space: predicted up-probability = sigmoid(base value + sum of all SHAP values). A positive SHAP value means the feature pushed the predicted probability of a price rise higher; a negative value pushed it lower. The magnitude shows how strongly. SHAP explains what the model learned, not a causal market mechanism, so a large SHAP value on a feature does not prove that feature moves the price."
+    },
+    {
+        "ticker": "",
+        "feature": "return_1d",
+        "title": "Indicator: return_1d (1-day return)",
+        "source": "Indicator reference (project)",
+        "content": "return_1d is the percentage change of the closing price versus the previous trading day (close / previous close - 1). It captures very short-term momentum. Single-day returns are noisy; a large positive or negative value often reflects news or market-wide moves and can partially reverse the next day."
+    },
+    {
+        "ticker": "",
+        "feature": "return_5d",
+        "title": "Indicator: return_5d (5-day return, momentum_5d)",
+        "source": "Indicator reference (project)",
+        "content": "return_5d (shown as momentum_5d in percent) is the percentage change of the close over the last 5 trading days, roughly one week. Positive values indicate short-term upward momentum, negative values short-term weakness. Strong short-term moves can either continue (momentum) or mean-revert, so its effect depends on the market regime."
+    },
+    {
+        "ticker": "",
+        "feature": "return_20d",
+        "title": "Indicator: return_20d (20-day return)",
+        "source": "Indicator reference (project)",
+        "content": "return_20d is the percentage change of the close over the last 20 trading days, roughly one month. It measures medium-term trend strength. A positive value means the stock has risen over the past month; very large values can indicate an extended move that is vulnerable to a pullback."
+    },
+    {
+        "ticker": "",
+        "feature": "ma_5",
+        "title": "Indicator: ma_5 (5-day moving average)",
+        "source": "Indicator reference (project)",
+        "content": "ma_5 is the average closing price over the last 5 trading days. It tracks the short-term price trend. Because it is a price level rather than a ratio, its value mainly tells the model which price regime the stock is in; it is most informative when compared with longer averages such as ma_20 (see ma_cross_signal)."
+    },
+    {
+        "ticker": "",
+        "feature": "ma_20",
+        "title": "Indicator: ma_20 (20-day moving average)",
+        "source": "Indicator reference (project)",
+        "content": "ma_20 is the average closing price over the last 20 trading days, roughly one month. It represents the medium-term trend and is often used as dynamic support or resistance. Price above ma_20 suggests an uptrend; price below suggests a downtrend. As a price level, it also encodes the overall price regime."
+    },
+    {
+        "ticker": "",
+        "feature": "ma_60",
+        "title": "Indicator: ma_60 (60-day moving average)",
+        "source": "Indicator reference (project)",
+        "content": "ma_60 is the average closing price over the last 60 trading days, roughly one quarter. It represents the longer-term trend. A short average (ma_5) above ma_60 indicates the stock is trading above its quarterly trend. As a price level, a high SHAP value on ma_60 often means the model learned behaviour specific to a price range in the training period rather than a general rule."
+    },
+    {
+        "ticker": "",
+        "feature": "ma_cross_signal",
+        "title": "Indicator: ma_cross_signal (MA5 vs MA20 cross, ma_cross)",
+        "source": "Indicator reference (project)",
+        "content": "ma_cross_signal (ma_cross) is +1 (BULLISH) when the 5-day moving average is above the 20-day moving average and -1 (BEARISH) when it is below. MA5 crossing above MA20 is called a golden cross and is read as the start of short-term upward momentum; crossing below is a death cross. Crossover signals lag the price and produce false signals in sideways markets."
+    },
+    {
+        "ticker": "",
+        "feature": "rsi",
+        "title": "Indicator: rsi (14-day Relative Strength Index)",
+        "source": "Indicator reference (project)",
+        "content": "rsi is the 14-day Relative Strength Index, 100 - 100 / (1 + average gain / average loss), ranging from 0 to 100. Above 70 is conventionally overbought (price rose quickly and may pull back); below 30 is oversold (price fell quickly and may rebound); 30-70 is normal. In strong trends RSI can stay overbought or oversold for a long time."
+    },
+    {
+        "ticker": "",
+        "feature": "rsi_signal",
+        "title": "Indicator: rsi_signal (RSI overbought / oversold state, rsi_state)",
+        "source": "Indicator reference (project)",
+        "content": "rsi_signal (rsi_state) encodes the RSI zone: +1 when RSI < 30 (OVERSOLD, a contrarian bullish signal), -1 when RSI > 70 (OVERBOUGHT, a contrarian bearish signal), and 0 otherwise (NORMAL). Note the sign convention: +1 means oversold, which suggests a possible rebound."
+    },
+    {
+        "ticker": "",
+        "feature": "macd",
+        "title": "Indicator: macd (MACD line)",
+        "source": "Indicator reference (project)",
+        "content": "macd is the 12-day exponential moving average of the close minus the 26-day exponential moving average. Positive MACD means short-term prices are above the longer-term trend (upward momentum); negative means downward momentum. Its value is in price units, so its scale depends on the stock's price level."
+    },
+    {
+        "ticker": "",
+        "feature": "macd_signal_line",
+        "title": "Indicator: macd_signal_line (MACD signal line)",
+        "source": "Indicator reference (project)",
+        "content": "macd_signal_line is the 9-day exponential moving average of the MACD line. It is a smoothed version of MACD. MACD crossing above its signal line is a bullish momentum signal; crossing below is bearish."
+    },
+    {
+        "ticker": "",
+        "feature": "macd_histogram",
+        "title": "Indicator: macd_histogram (MACD histogram)",
+        "source": "Indicator reference (project)",
+        "content": "macd_histogram is MACD minus its signal line. Positive and growing values mean upward momentum is strengthening; negative values mean momentum is weakening or turning down. A histogram shrinking toward zero often precedes a MACD crossover and can signal that the current trend is losing strength."
+    },
+    {
+        "ticker": "",
+        "feature": "macd_cross_signal",
+        "title": "Indicator: macd_cross_signal (MACD above/below signal line, macd)",
+        "source": "Indicator reference (project)",
+        "content": "macd_cross_signal is +1 (POSITIVE) when the MACD histogram is above zero, meaning MACD is above its signal line, and -1 (NEGATIVE) when it is below. It is a binary summary of MACD momentum direction."
+    },
+    {
+        "ticker": "",
+        "feature": "volatility_20d",
+        "title": "Indicator: volatility_20d (20-day volatility)",
+        "source": "Indicator reference (project)",
+        "content": "volatility_20d is the standard deviation of daily returns over the last 20 trading days (daily, not annualised; multiply by about 15.9 to annualise). Higher values mean larger daily price swings and higher risk. Rising volatility often accompanies sell-offs or uncertainty around events; low volatility indicates a calm market."
+    },
+    {
+        "ticker": "",
+        "feature": "volume_ma_20",
+        "title": "Indicator: volume_ma_20 (20-day average volume)",
+        "source": "Indicator reference (project)",
+        "content": "volume_ma_20 is the average daily trading volume over the last 20 trading days. It measures the stock's typical liquidity and trading interest. As an absolute level it mainly describes the trading regime; changes in volume are better captured by volume_ratio."
+    },
+    {
+        "ticker": "",
+        "feature": "volume_ratio",
+        "title": "Indicator: volume_ratio (volume vs 20-day average)",
+        "source": "Indicator reference (project)",
+        "content": "volume_ratio is today's volume divided by the 20-day average volume. Values above 1 mean unusually heavy trading; above about 1.5 is a volume spike. Price moves on high volume are considered more reliable (stronger conviction) than moves on low volume. Values below 1 indicate quiet trading."
+    }
+]

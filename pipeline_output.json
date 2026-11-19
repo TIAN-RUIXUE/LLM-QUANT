@@ -1,0 +1,18 @@
+{
+  "ticker": "D05.SI",
+  "date": "2026-09-29 00:00:00",
+  "price": 78.379997,
+  "llm_recommendation": "HOLD",
+  "final_recommendation": "HOLD",
+  "final_confidence": 0.55,
+  "uncertainty": 0.6,
+  "conflicts": [],
+  "indicators": {
+    "ma_cross": "BULLISH",
+    "rsi": 58.94,
+    "rsi_state": "NORMAL",
+    "macd": "NEGATIVE",
+    "momentum_5d": 0.75,
+    "volatility": 0.61
+  }
+}
