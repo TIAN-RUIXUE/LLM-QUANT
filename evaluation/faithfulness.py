@@ -42,7 +42,7 @@ Limitations (state these in the report):
 
 Usage:
   python -m evaluation.faithfulness                  # mock explainer only
-  python -m evaluation.faithfulness --llm            # + real LLM (Ollama qwen3:8b by default)
+  python -m evaluation.faithfulness --llm            # + real LLM (Ollama qwen2.5:32b by default)
   python -m evaluation.faithfulness --llm --provider deepseek --model deepseek-chat
   python -m evaluation.faithfulness --selftest       # sanity checks of the metrics, no data download
 """
@@ -647,7 +647,7 @@ if __name__ == "__main__":
     ap.add_argument("--cases", type=int, default=10, help="number of out-of-sample days to explain")
     ap.add_argument("--llm", action="store_true", help="also evaluate the real LLM (RealLLMClient)")
     ap.add_argument("--provider", default="ollama", choices=["ollama", "deepseek", "openai"])
-    ap.add_argument("--model", default="qwen3:8b")
+    ap.add_argument("--model", default="qwen2.5:32b")
     ap.add_argument("--top-k", type=int, default=5)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--selftest", action="store_true", help="run metric sanity checks and exit")

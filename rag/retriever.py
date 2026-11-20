@@ -137,8 +137,10 @@ class RAGRetriever:
         parts = []
         for i, doc in enumerate(retrieved_docs, 1):
             title = f" {doc['title']}" if doc.get("title") else ""
-            parts.append(f"[source{i}]{title} ({doc['source']})")
-            parts.append(doc['content'])
+            published = f", published {doc['published']}" if doc.get("published") else ""
+            parts.append(f"[source{i}]{title} ({doc['source']}{published})")
+            if doc['content'] != doc.get('title'):       # headline-only items: don't repeat it
+                parts.append(doc['content'])
             parts.append("---")
 
         return "\n".join(parts)

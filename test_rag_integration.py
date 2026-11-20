@@ -2,7 +2,7 @@
 from llm.analyzer import FinancialAnalyzer, LLMConfig
 import json
 
-config = LLMConfig(provider="ollama", model="qwen3:8b")
+config = LLMConfig(provider="ollama", model="qwen2.5:32b")
 analyzer = FinancialAnalyzer(config=config, use_rag=True)
 
 

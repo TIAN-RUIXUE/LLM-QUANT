@@ -25,7 +25,7 @@ from data.config import TICKERS
 
 def run_demo(ticker: str = "D05.SI", use_llm: bool = True, llm_config: LLMConfig = None):
     """
-    use_llm: When True, calls real LLM (default Ollama qwen3:8b), falls back to MockLLMClient on failure.
+    use_llm: When True, calls real LLM (default Ollama qwen2.5:32b), falls back to MockLLMClient on failure.
     """
     print("=" * 60)
     print("Quant-LLM Explainable Quantitative Investment System Demo")

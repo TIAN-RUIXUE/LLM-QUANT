@@ -34,6 +34,7 @@ class ValidationLog:
     final_confidence: float = 0.0
     uncertainty: float = 0.0
     conflicts: List[str] = field(default_factory=list)
+    effective_risk_flags: List[str] = field(default_factory=list)
 
 
 class SymbolicEngine:
@@ -121,26 +122,76 @@ class SymbolicEngine:
             conf = new_conf
             log.conflicts.append("Positive news sentiment contradicts SELL")
 
-        # --- Rule 5: Bullish tech + SELL -> downgrade ---
+        # --- Rule 5: Bullish tech (MA + MACD) + SELL -> HOLD ---
         if (signals.get('macd') == 'POSITIVE' and
             signals.get('ma_cross') == 'BULLISH' and
             rec == 'SELL'):
-            new_conf = max(0.0, conf - self.confidence_downgrade_step)
+            # Both trend indicators oppose the call -> block it (symmetric with the RSI rules:
+            # a counter-trend call justified only by the RSI extreme is not accepted)
             log.rules_fired.append(RuleResult(
                 rule_name="Technical_Bullish_Contradiction",
                 triggered=True,
+                action=Action.OVERRIDE_TO_HOLD,
+                description="MACD positive + MA bullish contradicts SELL; SELL overridden to HOLD",
+                original_value=conf
+            ))
+            rec = 'HOLD'
+            conf = min(conf, self.confidence_threshold)
+            log.conflicts.append("Technical indicators bullish but LLM says SELL")
+
+        # --- Rule 5b: Bearish tech (MA + MACD) + BUY -> HOLD (mirror of Rule 5) ---
+        if (signals.get('macd') == 'NEGATIVE' and
+            signals.get('ma_cross') == 'BEARISH' and
+            rec == 'BUY'):
+            # Both trend indicators oppose the call -> block it (symmetric with the RSI rules:
+            # a counter-trend call justified only by the RSI extreme is not accepted)
+            log.rules_fired.append(RuleResult(
+                rule_name="Technical_Bearish_Contradiction",
+                triggered=True,
+                action=Action.OVERRIDE_TO_HOLD,
+                description="MACD negative + MA bearish contradicts BUY; BUY overridden to HOLD",
+                original_value=conf
+            ))
+            rec = 'HOLD'
+            conf = min(conf, self.confidence_threshold)
+            log.conflicts.append("Technical indicators bearish but LLM says BUY")
+
+        # --- Rule 5c: Mixed trend signals (MA vs MACD disagree) + directional call -> downgrade ---
+        # The LLM is instructed to prefer HOLD when indicators conflict; enforce a penalty if it doesn't.
+        ma, macd = signals.get('ma_cross'), signals.get('macd')
+        mixed = ((ma == 'BULLISH' and macd == 'NEGATIVE') or
+                 (ma == 'BEARISH' and macd == 'POSITIVE'))
+        if mixed and rec in ('BUY', 'SELL'):
+            step = self.confidence_downgrade_step / 2
+            new_conf = max(0.0, conf - step)
+            log.rules_fired.append(RuleResult(
+                rule_name="Mixed_Trend_Signals",
+                triggered=True,
                 action=Action.DOWNGRADE_CONFIDENCE,
-                description="MACD positive + MA bullish contradicts SELL",
+                description=f"MA cross {ma} vs MACD {macd} disagree; {rec} confidence {conf:.2f} -> {new_conf:.2f}",
                 original_value=conf,
                 new_value=new_conf
             ))
             conf = new_conf
-            log.conflicts.append("Technical indicators bullish but LLM says SELL")
+            log.conflicts.append(f"Mixed trend signals (MA {ma}, MACD {macd}) but LLM says {rec}")
 
         # --- Rule 6: Risk flags + BUY -> downgrade ---
         # (must run BEFORE the low-confidence check, otherwise a BUY can end
         #  below the confidence threshold without being forced to HOLD)
-        risk_flags = llm_output.get('risk_flags') or []
+        risk_flags = list(llm_output.get('risk_flags') or [])
+        # Drop volatility flags that the measured volatility does not support
+        if signals.get('volatility_state') in ('LOW', 'NORMAL'):
+            unsupported = [f for f in risk_flags if 'volatil' in str(f).lower()]
+            if unsupported:
+                risk_flags = [f for f in risk_flags if f not in unsupported]
+                log.rules_fired.append(RuleResult(
+                    rule_name="Unsupported_Risk_Flag",
+                    triggered=True,
+                    action=Action.FLAG,
+                    description=(f"Ignored {unsupported}: volatility_state is {signals['volatility_state']} "
+                                 f"({signals.get('volatility_annualized_pct')}% annualised)")
+                ))
+        log.effective_risk_flags = risk_flags
         if len(risk_flags) > 0 and rec == 'BUY':
             new_conf = max(0.0, conf - 0.1 * len(risk_flags))
             log.rules_fired.append(RuleResult(
@@ -153,13 +204,17 @@ class SymbolicEngine:
             ))
             conf = new_conf
 
-        # --- Rule 7: Low confidence -> force HOLD ---
-        if conf < self.confidence_threshold and rec != 'HOLD':
+        # --- Rule 7: Confidence <= threshold -> force HOLD ---
+        # Round away float noise (0.6 - 0.2 = 0.3999...) so a value printed as 0.40
+        # is not treated as "below 0.4"
+        conf = round(conf, 4)
+        # At or below the threshold is not enough conviction for a directional call
+        if conf <= self.confidence_threshold and rec != 'HOLD':
             log.rules_fired.append(RuleResult(
                 rule_name="Low_Confidence_Force_HOLD",
                 triggered=True,
                 action=Action.OVERRIDE_TO_HOLD,
-                description=f"Confidence {conf:.2f} below threshold {self.confidence_threshold}; forced HOLD",
+                description=f"Confidence {conf:.2f} at/below threshold {self.confidence_threshold}; forced HOLD",
                 original_value=conf
             ))
             rec = 'HOLD'
@@ -205,6 +260,11 @@ class SymbolicEngine:
             ma_bull = signals.get('ma_cross') == 'BULLISH'
             macd_bull = signals.get('macd') == 'POSITIVE'
             if ma_bull != macd_bull:
+                agree += 1
+            # Contrarian RSI extreme against an aligned trend (e.g. OVERSOLD in a bearish
+            # trend) is a genuine conflict that also supports HOLD
+            elif ((signals.get('rsi_state') == 'OVERSOLD' and not ma_bull) or
+                  (signals.get('rsi_state') == 'OVERBOUGHT' and ma_bull)):
                 agree += 1
             return agree, 3
         return agree, 4

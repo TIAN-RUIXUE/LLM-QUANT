@@ -8,6 +8,10 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Optional
 
+# Annualised volatility bands (%) used to label volatility_state
+VOL_LOW_ANNUAL_PCT = 15.0
+VOL_HIGH_ANNUAL_PCT = 35.0
+
 
 def compute_technical_features(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -100,7 +104,9 @@ def get_latest_indicators_json(df: pd.DataFrame, date: Optional[str] = None) -> 
         else:
             result[key] = None
 
-    result['date'] = str(row.name) if hasattr(row, 'name') else str(date)
+    name = row.name if hasattr(row, 'name') else date
+    # Daily bars: drop the meaningless " 00:00:00" time component
+    result['date'] = name.strftime('%Y-%m-%d') if isinstance(name, pd.Timestamp) else str(name)
 
     return result
 
@@ -116,9 +122,21 @@ def get_indicator_summary(df: pd.DataFrame, date: Optional[str] = None) -> Dict:
         val = indicators.get(key)
         return round(val * factor, 2) if val is not None else None
 
+    vol_daily = _scaled('volatility_20d', 100)                      # % per day
+    vol_annual = round(float(vol_daily * np.sqrt(252)), 1) if vol_daily is not None else None
+    if vol_annual is None:
+        vol_state = 'UNKNOWN'
+    elif vol_annual < VOL_LOW_ANNUAL_PCT:
+        vol_state = 'LOW'
+    elif vol_annual > VOL_HIGH_ANNUAL_PCT:
+        vol_state = 'HIGH'
+    else:
+        vol_state = 'NORMAL'
+
+    price = indicators.get('close')
     summary = {
         'date': indicators.get('date'),
-        'price': indicators.get('close'),
+        'price': round(price, 2) if price is not None else None,
         'signals': {
             'ma_cross': 'BULLISH' if indicators.get('ma_cross_signal') == 1 else
                         'BEARISH' if indicators.get('ma_cross_signal') == -1 else 'NEUTRAL',
@@ -127,7 +145,10 @@ def get_indicator_summary(df: pd.DataFrame, date: Optional[str] = None) -> Dict:
                          'OVERBOUGHT' if indicators.get('rsi_signal') == -1 else 'NORMAL',
             'macd': 'POSITIVE' if indicators.get('macd_cross_signal') == 1 else 'NEGATIVE',
             'momentum_5d': _scaled('return_5d', 100),
-            'volatility': _scaled('volatility_20d', 100),
+            # Daily std of returns in % (kept under this key for backward compatibility)
+            'volatility': vol_daily,
+            'volatility_annualized_pct': vol_annual,
+            'volatility_state': vol_state,
         },
         'raw_indicators': indicators
     }

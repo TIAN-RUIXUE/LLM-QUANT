@@ -1,18 +1,27 @@
 {
   "ticker": "D05.SI",
-  "date": "2026-09-29 00:00:00",
-  "price": 78.379997,
-  "llm_recommendation": "HOLD",
+  "date": "2026-11-19",
+  "price": 67.34,
+  "llm_recommendation": "BUY",
   "final_recommendation": "HOLD",
-  "final_confidence": 0.55,
-  "uncertainty": 0.6,
-  "conflicts": [],
+  "final_confidence": 0.4,
+  "uncertainty": 0.6666666666666667,
+  "llm_confidence": 0.7,
+  "conflicts": [
+    "Technical indicators bearish but LLM says BUY"
+  ],
+  "rules_fired": [
+    "Technical_Bearish_Contradiction"
+  ],
+  "risk_flags": [],
   "indicators": {
-    "ma_cross": "BULLISH",
-    "rsi": 58.94,
-    "rsi_state": "NORMAL",
+    "ma_cross": "BEARISH",
+    "rsi": 21.28,
+    "rsi_state": "OVERSOLD",
     "macd": "NEGATIVE",
-    "momentum_5d": 0.75,
-    "volatility": 0.61
+    "momentum_5d": -4.06,
+    "volatility": 0.93,
+    "volatility_annualized_pct": 14.8,
+    "volatility_state": "LOW"
   }
 }
